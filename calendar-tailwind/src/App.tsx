@@ -2,7 +2,7 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import { Calendar } from "./components/css-module/Calendar";
+import { Calendar } from "./components/ui/calendar";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -11,11 +11,8 @@ function App() {
     <>
       <div>
         <div>
-          <div className="flex gap-3">
-            <Calendar />
-            <Calendar size="lg" />
-          </div>
-
+          <div className="flex gap-3"></div>
+          <Calendar className="p-6 bg-slate-900 rounded-lg" />
           <p>CSS MODULE</p>
         </div>
         <a href="https://vitejs.dev" target="_blank">
