@@ -1,100 +1,58 @@
 import React, { MouseEvent, ReactNode, useCallback, useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
+import styles from "./calendar.module.css";
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-type CalendarTailwinds<T = string> = {
-  /**sm size */
-  readonly sm_nav_row: T; // <nav/>
-  readonly sm_nav_button_grid: T; // <div/>
-  readonly sm_nav_button: T; // <button/>
-  readonly sm_nav_button_svg: T; // <svg/>
-  readonly sm_nav_button_path: T; //<path/>
-  // headCompo
-  readonly sm_days_row: T; //<header/>
-  readonly sm_days_content: T; //<span/>
-  // TableCompo
-  readonly sm_table: T; // <ul/>
-  // cell
-  readonly sm_cell: T; // <li/>
-  readonly sm_cell_button: T; // <button/>
-  readonly sm_cell_value: T; // <p/>
-  // cell conditional css
-  readonly sm_cell_isSameMonth: T; // sm_cell Styling
-  readonly sm_cell_isSelectDay: T;
-  readonly sm_cell_isToday: T;
-
-  /**lg size */
-  readonly lg_nav_row: T; //<nav/>
-  readonly lg_nav_button_grid: T; // <div/>
-  readonly lg_nav_button: T; // <button/>
-  readonly lg_nav_button_svg: T; // <svg/>
-  readonly lg_nav_button_path: T; //<path/>
-  // headCompo
-  readonly lg_days_row: T; //<header/>
-  readonly lg_days_content: T; //<span/>
-  // TableCompo
-  readonly lg_table: T; //<ul/>
-  // cell
-  readonly lg_cell: T; // <li/>
-  readonly lg_cell_button: T; // <button/>
-  readonly lg_cell_value: T; // <p/>
-  // cell conditional css
-  readonly lg_cell_isSameMonth: T; // lg_cell Styling
-  readonly lg_cell_isSelectDay: T; // lg_cell Styling
-  readonly lg_cell_isToday: T; // lg_cell Styling
-};
-type ClassNames = Partial<CalendarTailwinds>;
 
 const DAYS = [0, 1, 2, 3, 4, 5, 6];
-const svgCVA = cva("fill-none", {
+
+const svgCVA = cva(styles["svg-base-reset"], {
   variants: {
     svg: {
-      sm: "w-5 h-5",
-      lg: "w-9 h-9",
+      sm: styles["sm-nav-svg"],
+      lg: styles["lg-nav-svg"],
     },
     path: {
-      sm: "stroke-[#5C5C5C] stroke-2 group-hover:stroke-white",
-      lg: "stroke-black stroke-[3]",
+      sm: styles["sm-nav-svg-path"],
+      lg: styles["lg-nav-svg-path"],
     },
   },
 });
-const buttonCVA = cva(
-  "p-0 m-0 bg-transparent border-none outline-none appearance-none  focus:outline-none cursor-pointer",
-  {
-    variants: {
-      nav: {
-        sm: "flex w-7 justify-center items-center rounded-lg hover:bg-neutral-900 transition-colors duration-500 group",
-        lg: "w-14 h-14 rounded-[12px] opacity-50 bg-gray-300 hover:transition-opacity hover:duration-500 hover:opacity-100 flex justify-center items-center",
-      },
-      cell: {
-        sm: "",
-        lg: "text-sm",
-      },
+const buttonCVA = cva(styles["button-base-reset"], {
+  variants: {
+    nav_button: {
+      sm: styles["sm-nav-button"],
+      lg: styles["lg-nav-button"],
+    },
+    cell_button: {
+      sm: "",
+      lg: styles["lg-cell-button"],
     },
   },
-);
-const CalendarCVA = cva("", {
+});
+const CalendarCVA = cva(styles["base-style"], {
   variants: {
     size: {
-      sm: "grid grid-cols-[max-content] w-[max-content] gap-y-3 p-4 bg-black grid-rows-[1fr_1fr_auto] rounded-xl border-2 border-[#bbb] text-white",
-      lg: "grid grid-rows-[1fr_auto_auto] grid-cols-[max-content] w-[max-content] bg-black border-[#bbb] text-white p-6 rounded-2xl border-4",
+      sm: styles["sm-calendar-grid"],
+      lg: styles["lg-calendar-grid"],
     },
     nav: {
-      sm: "flex justify-center relative",
-      lg: "flex flex-col items-start text-2xl",
+      sm: styles["sm-nav-grid"],
+      lg: styles["lg-nav-grid"],
     },
+
     nav_button_container: {
-      sm: "absolute inset-0 flex justify-between",
-      lg: "mt-4 flex gap-2 pb-2 border-b border-gray-300",
+      sm: styles["sm-nav-button-container"],
+      lg: styles["lg-nav-button-container"],
     },
 
     header: {
-      sm: "grid grid-cols-7 place-content-center gap-x-[10px] justify-items-center text-xs font-bold text-[#A1A1AA]",
-      lg: "mt-6 grid auto-rows-auto grid-cols-7 justify-items-start gap-6 text-lg",
+      sm: styles["sm-head-grid"],
+      lg: styles["lg-head-grid"],
     },
     table: {
-      sm: "grid grid-cols-7 gap-y-[14px] gap-x-[10px] text-sm",
-      lg: "mt-6 grid grid-cols-7 justify-items-start gap-x-6 gap-y-[14px]",
+      sm: styles["sm-table-grid"],
+      lg: styles["lg-table-grid"],
     },
   },
 });
@@ -102,8 +60,8 @@ const CalendarCVA = cva("", {
 const CellCVA = cva("", {
   variants: {
     cell: {
-      sm: "relative flex justify-center w-8 h-8 rounded-[10px] opacity-50 cursor-pointer hover:transition-colors hover:duration-[0.3s] hover:bg-neutral-900 hover:text-[#bbb]",
-      lg: "flex flex-col gap-2 w-[76px] h-[76px] items-start cursor-pointer opacity-50 p-1 rounded-xl hover:transition-opacity hover:duration-[0.2s] hover:opacity-70 hover:text-white hover:bg-[#404045]",
+      sm: styles["sm-cell"],
+      lg: styles["lg-cell"],
     },
     isSameMonth: {
       true: "",
@@ -115,49 +73,45 @@ const CellCVA = cva("", {
       true: "",
     },
     cell_value: {
-      sm: "w-0 overflow-hidden after:content-[''] after:absolute after:top-1 after:right-1 after:w-1 after:h-1 after:rounded-full after:bg-[#ff6600]",
-      lg: "w-full h-full text-sm pl-1 overflow-hidden text-start text-ellipsis whitespace-nowrap",
+      sm: styles["sm-cell-value"],
+      lg: styles["lg-cell-value"],
     },
   },
   compoundVariants: [
     {
       cell: "sm",
       isSameMonth: true,
-      className: "opacity-100",
+      className: styles["sm-sameMonth"],
     },
     {
       cell: "sm",
       isSelectDay: true,
-      className:
-        "bg-white text-black hover:transition-none hover:bg-white hover:text-black",
+      className: styles["sm-selectDay"],
     },
     {
       cell: "sm",
       isToday: true,
-      className: "bg-[#27272A]",
+      className: styles["sm-today"],
     },
     {
       cell: "lg",
       isToday: true,
-      className: "bg-[#27272A] opacity-100",
+      className: styles["lg-today"],
     },
     {
       cell: "lg",
       isSelectDay: true,
-      className:
-        "bg-white text-black opacity-100 font-bold hover:bg-white hover:text-black hover:opacity-100",
+      className: styles["lg-selectDay"],
     },
   ],
 });
-
 const Calendar = <T extends { [key: string | number]: ReactNode }>({
   defaultDate,
   defaultSetDate,
   defaultSelectDate,
   defaultSetSelectDate,
-  onClickHandler,
-  classNames,
   className,
+  onClickHandler,
   size = "sm",
   render,
   contents,
@@ -165,7 +119,6 @@ const Calendar = <T extends { [key: string | number]: ReactNode }>({
   cellDateFormat = "D", // 기본 날짜 렌더링 포맷
 }: {
   className?: string;
-  classNames?: ClassNames;
   defaultDate?: Dayjs;
   size?: "sm" | "lg";
   contents?: {
@@ -214,7 +167,6 @@ const Calendar = <T extends { [key: string | number]: ReactNode }>({
   ) => {
     if (!values) return;
     const value = values.get(key);
-    // Please watching console
     console.log("value : ", value);
   };
   const onClickDayHandler = onClickHandler ?? defaultOnClickHandler;
@@ -229,15 +181,13 @@ const Calendar = <T extends { [key: string | number]: ReactNode }>({
   return (
     <div className={cn(CalendarCVA({ size }), className)}>
       <NavCompo
-        classNames={classNames}
         size={size}
         currentDate={currentDate}
         clickPreMonthHandler={clickPreMonthHandler}
         clickNextMonthHandler={clickNextMonthHandler}
       />
-      <HeadCompo classNames={classNames} size={size} />
+      <HeadCompo size={size} />
       <TableCompo
-        classNames={classNames}
         contents={contents}
         size={size}
         currentDate={currentDate}
@@ -256,82 +206,47 @@ function NavCompo({
   currentDate,
   clickPreMonthHandler,
   clickNextMonthHandler,
-  classNames,
   size,
 }: {
   currentDate: Dayjs;
-  classNames?: ClassNames;
   clickPreMonthHandler: () => void;
   clickNextMonthHandler: () => void;
   size: "sm" | "lg";
 }) {
   return (
-    // nav row
-    <nav
-      className={cn(
-        CalendarCVA({ nav: size }),
-        classNames?.[`${size}_nav_row`],
-      )}
-    >
+    <nav className={CalendarCVA({ nav: size })}>
       {currentDate.format("MMMM YYYY")}
-      {/**nav_button_grid */}
-      <div
-        className={cn(
-          CalendarCVA({ nav_button_container: size }),
-          classNames?.[`${size}_nav_button_grid`],
-        )}
-      >
-        {/* nav_button & nav_button_previous */}
+      <div className={CalendarCVA({ nav_button_container: size })}>
         <button
-          className={cn(
-            buttonCVA({ nav: size }),
-            classNames?.[`${size}_nav_button`],
-          )}
+          className={cn(buttonCVA({ nav_button: size }))}
           type="button"
           onClick={clickPreMonthHandler}
         >
-          {/* nav_button_svg */}
-          <ArrowLeft classNames={classNames} size={size} />
+          <ArrowLeft size={size} />
         </button>
-        {/* nav_button & nav_button_next */}
         <button
-          className={cn(
-            buttonCVA({ nav: size }),
-            classNames?.[`${size}_nav_button`],
-          )}
+          className={cn(buttonCVA({ nav_button: size }))}
           type="button"
           onClick={clickNextMonthHandler}
         >
-          {/* nav_button_svg */}
-          <ArrowRight classNames={classNames} size={size} />
+          <ArrowRight size={size} />
         </button>
       </div>
     </nav>
   );
 }
 
-const HeadCompo = React.memo(function Days({
-  size,
-  classNames,
-}: {
-  size: "sm" | "lg";
-  classNames?: ClassNames;
-}) {
+const HeadCompo = React.memo(function Days({ size }: { size: "sm" | "lg" }) {
   return (
-    <header
-      className={cn(
-        CalendarCVA({ header: size }),
-        classNames?.[`${size}_days_row`],
-      )}
-    >
+    <div className={CalendarCVA({ header: size })}>
       {DAYS.map((day) => (
-        <span key={day} className={cn(classNames?.[`${size}_days_content`])}>
+        <span key={day}>
           {dayjs()
             .day(day)
             .format(size === "sm" ? "dd" : "ddd")}
         </span>
       ))}
-    </header>
+    </div>
   );
 });
 
@@ -345,11 +260,9 @@ function TableCompo<T extends { [key: string | number]: ReactNode }>({
   render,
   identiFormat,
   cellDateFormat,
-  classNames,
 }: {
   currentDate: Dayjs;
   size: "sm" | "lg";
-  classNames?: ClassNames;
   selectDay: Dayjs | null;
   onChangeSelectDay: (day: Dayjs) => void;
   onClickDayHandler: (
@@ -401,37 +314,19 @@ function TableCompo<T extends { [key: string | number]: ReactNode }>({
           <li
             data-id={itemKey}
             key={`${itemKey}-${i}`}
-            className={cn(
-              CellCVA({
-                cell: size,
-                isSameMonth: isSameMonth,
-                isSelectDay: selectDay?.isSame(day, "day"),
-                isToday: isToday,
-              }),
-
-              isSameMonth && classNames?.[`${size}_cell_isSameMonth`],
-              selectDay?.isSame(day, "day") &&
-                classNames?.[`${size}_cell_isSelectDay`],
-              isToday && classNames?.[`${size}_cell_isToday`],
-            )}
+            className={CellCVA({
+              cell: size,
+              isSameMonth: isSameMonth,
+              isSelectDay: selectDay?.isSame(day, "day"),
+              isToday: isToday,
+            })}
           >
-            <button
-              type="button"
-              className={cn(
-                buttonCVA({ cell: size }),
-                classNames?.[`${size}_cell_button`],
-              )}
-            >
+            <button type="button" className={buttonCVA({ cell_button: size })}>
               {day.format(cellDateFormat)}
             </button>
 
             {value.length > 0 && (
-              <p
-                className={cn(
-                  CellCVA({ cell_value: size }),
-                  classNames?.[`${size}_cell_value`],
-                )}
-              >
+              <p className={CellCVA({ cell_value: size })}>
                 {value.map((val) =>
                   Object.entries(val).map(([key, value]) => (
                     <React.Fragment key={`${key}+${value}`}>
@@ -448,13 +343,9 @@ function TableCompo<T extends { [key: string | number]: ReactNode }>({
       day = day.add(1, "day");
     }
   }
-
   return (
     <ul
-      className={cn(
-        CalendarCVA({ table: size }),
-        classNames?.[`${size}_table`],
-      )}
+      className={CalendarCVA({ table: size })}
       onClick={(e: MouseEvent<HTMLUListElement>) => {
         const target = e.target as HTMLElement;
         if (target instanceof HTMLUListElement) return;
@@ -488,17 +379,12 @@ function TableCompo<T extends { [key: string | number]: ReactNode }>({
 
 const ArrowLeft = React.memo(function ArrowLeft({
   size,
-  classNames,
 }: {
   size: "sm" | "lg";
-  classNames?: ClassNames;
 }) {
   return (
     <svg
-      className={cn(
-        svgCVA({ svg: size }),
-        classNames?.[`${size}_nav_button_svg`],
-      )}
+      className={cn(svgCVA({ svg: size }))}
       viewBox="0 0 35 35"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -506,12 +392,9 @@ const ArrowLeft = React.memo(function ArrowLeft({
         <path
           id="Vector"
           d="M21.5 25.5L13.5 18L21.5 10.5"
+          className={cn(svgCVA({ path: size }))}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={cn(
-            svgCVA({ path: size }),
-            classNames?.[`${size}_nav_button_path`],
-          )}
         />
       </g>
     </svg>
@@ -520,17 +403,12 @@ const ArrowLeft = React.memo(function ArrowLeft({
 
 const ArrowRight = React.memo(function ArrowRight({
   size,
-  classNames,
 }: {
   size: "sm" | "lg";
-  classNames?: ClassNames;
 }) {
   return (
     <svg
-      className={cn(
-        svgCVA({ svg: size }),
-        classNames?.[`${size}_nav_button_svg`],
-      )}
+      className={cn(svgCVA({ svg: size }))}
       viewBox="0 0 35 35"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -538,12 +416,9 @@ const ArrowRight = React.memo(function ArrowRight({
         <path
           id="Vector"
           d="M13.5 25.5L21.5 18L13.5 10.5"
+          className={cn(svgCVA({ path: size }))}
           strokeLinecap="round"
           strokeLinejoin="round"
-          className={cn(
-            svgCVA({ path: size }),
-            classNames?.[`${size}_nav_button_path`],
-          )}
         />
       </g>
     </svg>
